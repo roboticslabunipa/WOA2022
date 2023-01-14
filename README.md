@@ -2,7 +2,7 @@ WOA 2022
 ====================
 
 The repository was built as additional material of the extended version of paper entitled "Can agents talk about what they are doing? A proposal with Jason and speech acts" by Valeria Seidita, Francesco Lanza, Antonio Chella and Angelo Maria Pio Sabella" submitted to the WOA 2022: Workshop “From Objects to Agents”.
-The extended version is entitled "" by same authors.
+The extended version is entitled "Agent talks about itself: an implementation using Jason, CArtAgO and Speech Acts" by same authors.
 
 The repository contains code related to the example given in the extended version.
 There has been a shift from using Jason to using the Jacamo framework for implementation.
