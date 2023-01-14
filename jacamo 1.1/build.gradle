@@ -1,0 +1,358 @@
+/*
+   JaCaMo Gradle build file
+
+*/
+
+plugins {
+  id "ca.coglinc.javacc" version "2.4.0"
+  // see https://github.com/johnmartel/javaccPlugin
+}
+
+defaultTasks 'jar'
+
+apply plugin: 'java-library'
+apply plugin: 'maven-publish'
+
+version '1.1'
+group   'org.jacamo'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src/main/java'
+            srcDir 'build/generated/javacc'
+        }
+        resources {
+            srcDir 'src/resources'
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+
+    //maven { url "http://jacamo.sourceforge.net/maven2/" }
+    maven { url "https://raw.githubusercontent.com/jacamo-lang/mvn-repo/master" }
+    maven { url 'https://repo.gradle.org/gradle/libs-releases' }
+    //maven { url "https://jade.tilab.com/maven/" }
+
+    //flatDir {       dirs 'lib'    }
+}
+
+
+dependencies {
+    api('org.jason:jason:3.1') {
+       exclude group: 'net.sf.ingenias', module: 'jade'
+    }
+    api('org.jacamo:cartago:3.1') {  transitive = false  }
+    api('org.jacamo:jaca:3.1') {  transitive = false  }
+
+    api('org.jacamo:moise:1.0') {  transitive = false  }
+    api('org.jacamo:npl:0.5')  {  transitive = false  }
+
+    api('org.jacamo:intmas:1.0.0')
+    api('org.jacamo:sai:0.5.1') {  transitive = false  }
+    implementation('org.antlr:antlr4:4.8')
+
+    api('net.sf.ingenias:jade:4.3')
+
+    implementation ('org.jacamo:jacamo-rest:0.7') {
+         exclude group: 'org.jacamo', module: 'jacamo'
+    }
+
+    implementation('org.apache.ant:ant:1.10.5')
+    implementation('org.gradle:gradle-tooling-api:7.4.2')
+
+    implementation('guru.nidi:graphviz-java:0.7.0')
+    implementation('org.slf4j:slf4j-nop:1.7.30')
+
+    testImplementation('junit:junit:4.12')
+
+    // used in cartago web infrastructure
+    implementation "io.vertx:vertx-core:3.7.0"
+    implementation "io.vertx:vertx-sync:3.7.0"
+    implementation "io.vertx:vertx-unit:3.7.0"
+    implementation "io.vertx:vertx-web:3.7.0"
+    implementation "io.vertx:vertx-web-client:3.7.0"
+    implementation "com.fasterxml.jackson.core:jackson-databind:2.9.8"
+}
+
+// copy dep jars and scritps into build directory
+task copyJarsToBuild {
+    inputs.files configurations.runtimeClasspath.files
+    inputs.dir   'scripts'
+    outputs.dir  'build/libs'
+    outputs.dir  'build/scripts'
+    doLast {
+        copy {
+            from configurations.runtimeClasspath
+            into 'build/libs'
+            // comment the next lines to include jason 3.1 and cartago 3.1 native, not re-build with inner speech code or utilities
+            exclude '**/jason-3.1.jar'
+            //exclude '**/cartago-3.1.jar'
+        }
+        copy {
+            from 'scripts'
+            into 'build/scripts'
+            include '**'
+            filter {
+                String line -> line.replaceAll("JacamoREL=[0-9]+\\.[0-9]+", "JacamoREL="+project.version)
+            }
+            filter {
+                String line -> line.replaceAll("JasonREL", file(configurations.compileClasspath.find { it.name.startsWith("jason-") }).name)
+            }
+        }
+    }
+}
+
+compileJavacc {
+    inputDirectory = file('src/main/javacc')
+    outputDirectory = file(project.buildDir.absolutePath + '/generated/javacc/jacamo/project/parser')
+}
+
+
+jjdoc {
+    outputDirectory = file(project.projectDir.absolutePath + '/doc')
+    //arguments = [text: 'true']
+}
+
+
+jar {
+    archiveBaseName = 'jacamo'
+    manifest {
+        attributes 'Main-Class': 'jacamo.util.ConfigGUI',
+                   'Specification-Title': 'JaCaMo framework',
+                   'Specification-Version': project.version,
+                   'Implementation-Version': new Date().toString(),
+                   'Class-Path': file(configurations.compileClasspath.find { it.name.startsWith("jason-") }).name
+    }
+
+    from('src') {
+        include '/test/jacamo/**/*.asl'
+        include '/test/jacamo/**/*.jcm'
+    }
+
+    //from ( configurations.compile.collect { zipTree(it) } ) {
+    //    include 'jason/**/*Factory.class', 'jason/**/Config.class'
+    //}
+
+    /*doFirst {
+        Properties props = new Properties()
+        props.put('version', '')
+        props.put('release', project.version)
+        props.store(new File(project.buildDir.absolutePath +'/classes/main/jacamo.dist.properties').newWriter(), null)
+    }*/
+}
+jar.dependsOn(copyJarsToBuild)
+
+clean {
+    delete 'bin'
+    delete 'readme.html'
+    delete 'release-notes.html'
+    delete fileTree('doc') { include '*.html'  }
+    delete fileTree('doc/tutorials/hello-world')  { include '**/*.html'  }
+    delete fileTree('doc/tutorials/coordination') { include '*.html'  }
+    delete fileTree('doc/tutorials/gold-miners')  { include '**/*.html'  }
+    delete fileTree('src')  { include '**/bin/**'  }
+    delete fileTree('src')  { include '**/*.log'  }
+
+    delete fileTree('examples')  { include '**/build/**'  }
+    delete fileTree('examples')  { include '**/bin/**'  }
+    delete fileTree('demos')     { include '**/build/**'  }
+    delete fileTree('demos')     { include '**/bin/**'  }
+
+    def emptyDirs = []
+    fileTree (dir: 'examples').visit {
+        def File f = it.file
+        if (f.isDirectory() ) {
+            def children = project.fileTree(f).filter { it.isFile() }.files
+            if (children.size() == 0) {
+                emptyDirs << f
+            }
+        }
+    }
+    fileTree (dir: 'demos').visit {
+        def File f = it.file
+        if (f.isDirectory() ) {
+            def children = project.fileTree(f).filter { it.isFile() }.files
+            if (children.size() == 0) {
+                emptyDirs << f
+            }
+        }
+    }
+    emptyDirs.reverseEach { it.delete() }
+}
+
+task config (dependsOn: 'jar') {
+    /*
+    main = 'jacamo.util.Config'
+    classpath sourceSets.main.runtimeClasspath
+    workingDir project.buildDir.absolutePath + '/libs'
+
+    doFirst {
+        delete System.getProperty("user.home")+'/.jacamo'
+    }
+    */
+    doLast {
+        println '------'
+        println ''
+        println 'you can set the JaCaMo home directory with the following command:'
+        println '     export JACAMO_HOME='+project.buildDir.absolutePath
+        println ''
+        println 'and also change your PATH with:'
+        println '     export PATH=$JACAMO_HOME/scripts:$PATH'
+        println ''
+        println '-----'
+    }
+}
+
+task javadocJar (type: Jar, dependsOn: javadoc) {
+    archiveBaseName = 'jacamo'
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+task sourceJar (type : Jar) {
+    archiveBaseName = 'jacamo'
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+
+// publishing {
+//     publications {
+//         maven(MavenPublication) {
+//             from components.java
+//             artifact sourceJar
+//             artifact javadocJar
+
+//             artifactId 'jacamo'
+//         }
+//     }
+// }
+
+
+// task publishMavenGitHub(dependsOn: [ 'build', 'publishToMavenLocal']) {
+//   doLast {
+//     def wdir = System.getProperty("user.home")+'/.m2/repository/org/jacamo/jacamo'
+//     def rdir = '../jacamo-mvn-repo'
+//     exec {
+//         commandLine 'git', 'pull'
+//         workingDir rdir
+//     }
+//     copy {
+//         from wdir
+//         include project.version+'/**'
+//         into rdir + '/org/jacamo/jacamo'
+//     }
+//     exec {
+//         commandLine 'git', 'add', '*'
+//         workingDir rdir
+//     }
+//     exec {
+//         commandLine 'git', 'commit', '-a', '-m', 'new version of jacamo '+project.version
+//         workingDir rdir
+//     }
+//     exec {
+//         commandLine 'git', 'push'
+//         workingDir rdir
+//     }
+//   }
+// }
+
+javadoc {
+    options.showAll()
+    options.encoding('UTF-8')
+    options.setUse(true)
+    options.author(true)
+    options.version(true)
+    options.windowTitle('JaCaMo API')
+    options.docTitle('JaCaMo API')
+    options.footer('<a href=http://jacamo.sf.net>JaCaMo Site</a>')
+    destinationDir = file("${buildDir}/../doc/api")
+    doFirst {
+        javadoc.title = 'JaCaMo API'
+        javadoc.options.docTitle = javadoc.title
+    }
+}
+
+
+// Builds the distribution, documentation and a new release
+task doc(dependsOn: [ 'jjdoc', 'javadoc', 'renderAsciiDocs']) {
+}
+
+task renderAsciiDocs(type: Exec) {
+    commandLine 'find', '.', '-name', '*.adoc', '-exec', 'scripts/asciidoc-docker', '{}', ';'
+}
+
+task fixTab {
+    ant.fixcrlf(eol: 'lf',  includes: '**/*.txt,**/*.bat, **/*.adoc', srcdir: '.')
+    ant.fixcrlf(tab: 'remove', tablength: '4', javafiles: 'true', includes: '**/*.java,**/*.xml', srcdir: 'src')
+    ant.fixcrlf(tab: 'remove', tablength: '4', javafiles: 'true', includes: '*.gradle', srcdir: '.')
+}
+
+
+// Builds the distribution, documentation and a new release
+task release(dependsOn: [ 'build', 'doc', 'fixTab', 'zipRel']) {
+}
+
+// copy files used to build a release
+task copyRel {
+    doLast {
+        copy {
+            from '.'
+            into 'build/jacamo-'+project.version
+            include '*.html'
+            include 'LICENSE'
+            include 'doc/**'
+        }
+        copy {
+            from 'build/scripts'
+            into 'build/jacamo-'+project.version+'/scripts'
+        }
+        copy {
+            duplicatesStrategy = 'include'
+            from 'build/libs'
+            from configurations.runtimeClasspath
+            into 'build/jacamo-'+project.version+'/libs'
+            include '**/*.jar'
+            //exclude '**/jason-2.0.jar'
+        }
+        // copy {
+        //     from docsDir
+        //     into 'build/jacamo-'+project.version+'/doc'
+        // }
+        // copy {
+        //     from 'examples'
+        //     into 'build/jacamo-'+project.version+'/examples'
+        // }
+        // copy {
+        //     from 'demos'
+        //     into 'build/jacamo-'+project.version+'/demos'
+        // }
+        copy {
+            from 'src/main/resources/templates'
+            into 'build/jacamo-'+project.version+'/src/templates'
+        }
+        delete fileTree('build/jacamo-'+project.version+'/doc')  { include '**/*.adoc', '**/Makefile', '**/publish.sh'  }
+    }
+}
+
+// creates a zip file for a release
+task zipRel(type: Zip, dependsOn: copyRel) {
+    from 'build/jacamo-'+project.version
+    archiveBaseName = 'jacamo'
+}
+
+// task runauction (type: JavaExec, dependsOn: 'classes') {
+//     workingDir 'examples/auction'
+//     main = 'jacamo.infra.JaCaMoLauncher'
+//     args 'auction.jcm'
+//     classpath sourceSets.main.runtimeClasspath
+// }

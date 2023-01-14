@@ -1,0 +1,62 @@
+defaultTasks 'run'
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+
+version '1.0'
+group   'org.jacamo'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(15)
+    }
+}
+
+repositories {
+    maven { url "https://raw.githubusercontent.com/jacamo-lang/mvn-repo/master" }
+
+    //maven { url "http://jacamo.sourceforge.net/maven2" }
+    //maven { url "https://repo.gradle.org/gradle/libs-releases" }
+    //maven { url "https://jade.tilab.com/maven/" }
+
+    flatDir {
+       dirs 'lib'
+    }
+
+    mavenCentral()
+}
+
+dependencies {
+    compile group: 'org.jacamo', name: 'jacamo', version: '1.0'
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src/env'
+            srcDir 'src/agt'
+            srcDir 'src/org'
+            srcDir 'src/java'
+        }
+        resources {
+            srcDir 'src/resources'
+        }
+    }
+}
+
+task run (type: JavaExec, dependsOn: 'classes') {
+    group       ' JaCaMo'
+    description 'runs the JaCaMo application'
+    doFirst {
+        mkdir 'log'
+    }
+    main 'jacamo.infra.JaCaMoLauncher'
+    args = ['remote.jcm', '--deploy-hosts', 'smart_home.properties']
+    classpath sourceSets.main.runtimeClasspath
+}
+
+clean {
+    delete 'bin'
+    delete 'build'
+    delete 'log'
+}

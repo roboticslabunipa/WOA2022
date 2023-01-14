@@ -1,0 +1,26 @@
+/*
+   Gradle build file to create new JaCaMo Applications
+   based on JaCaMo version 0.7
+*/
+
+defaultTasks 'run'
+
+apply plugin: 'java'
+
+repositories {
+    maven { url "http://jacamo.sourceforge.net/maven2" }
+    maven { url "https://jade.tilab.com/maven/" }
+    maven { url "https://repo.gradle.org/gradle/libs-releases-local" }
+    mavenCentral()
+}
+
+dependencies {
+    compile group: 'org.jacamo', name: 'jacamo', version: '0.7.3'
+}
+
+task run (type: JavaExec, dependsOn: 'classes') {
+    description 'runs the application'
+    standardInput = System.in
+    main = 'jacamo.util.CreateNewProject'
+    classpath sourceSets.main.runtimeClasspath
+}
