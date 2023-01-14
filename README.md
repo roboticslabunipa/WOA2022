@@ -36,5 +36,5 @@ Run example:
 
 After running gradle task and building jacamo.jar (build dir), go inside the example folder and run the script:
 ```
-jacamo example_name.jcm 
+jacamo lay_the_table.jcm 
 ```
