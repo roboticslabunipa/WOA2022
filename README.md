@@ -31,6 +31,7 @@ For more details on setup follow the instruction for Jacamo developer in the REA
 - https://github.com/jacamo-lang/jacamo
 
 Run example:
+-------------
 
 After running gradle task and building jacamo.jar (build dir), go inside the example folder and run the script:
 
