@@ -22,9 +22,9 @@ Prepare the enviroment:
 ----------------
 
 Go inside the folder with Jacamo (same things for Jason) and run:
-
+```
 ./gradlew config
-
+```
 Set $JAVA_HOME, $JACAMO_HOME, and if used $JASON_HOME
 
 For more details on setup follow the instruction for Jacamo developer in the README at this link: 
@@ -34,5 +34,6 @@ Run example:
 -------------
 
 After running gradle task and building jacamo.jar (build dir), go inside the example folder and run the script:
-
+```
 jacamo example_name.jcm 
+```
