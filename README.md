@@ -25,7 +25,8 @@ Go inside the folder with Jacamo (same things for Jason) and run:
 ```
 ./gradlew config
 ```
-Set $JAVA_HOME, $JACAMO_HOME, and if used $JASON_HOME
+Set $JAVA_HOME, $JACAMO_HOME, and if used $JASON_HOME.
+The steps for these configurations are shown in the output of the previous script.
 
 For more details on setup follow the instruction for Jacamo developer in the README at this link: 
 - https://github.com/jacamo-lang/jacamo
