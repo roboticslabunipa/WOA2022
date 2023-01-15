@@ -8,6 +8,8 @@ The repository contains code related to the example given in the extended versio
 There has been a shift from using Jason to using the Jacamo framework for implementation.
 The Jason interpreter has been enriched with a new agent class directly available in the source code and utility functions for this class, by means of which it is possible to equip agents of inner speech.
 This first version does not include an ontology and requires certain care in properly programming the plans and knowledge base, as specific annotations and regular expressions are used, along with string manipulation, for justification.
+In addition, the message selection features have also been customized to prioritize messages towards itself.
+The functionality to make an agent get missing plans (as shown in the diagram) by sending a request to other agents is still under development and testing.
 
 Prerequisites:
 -----------------
