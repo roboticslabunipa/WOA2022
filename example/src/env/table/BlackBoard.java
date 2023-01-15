@@ -2,6 +2,7 @@ package table;
 
 import cartago.*;
 import jason.asSyntax.Atom;
+import jason.asSyntax.Structure;
 import java.util.Collections;
 import java.util.Arrays;
 import java.util.ArrayList;
@@ -12,7 +13,8 @@ public class BlackBoard extends Artifact {
   // Change ArrayList with Set if want to have only one specific task in the list
   private ArrayList<String> todo = new ArrayList<>();
   private ArrayList<String> completed = new ArrayList<>();
-
+  
+  // TODO: use the new_task method to add tasks to the list and update their plans and methods
   void init() {
     defineObsProperty("label", new Atom("fork"), new Atom("f"));
     defineObsProperty("label", new Atom("dish"), new Atom("d"));
@@ -94,7 +96,7 @@ public class BlackBoard extends Artifact {
   }
   @OPERATION(guard="isFree") void readTask(OpFeedbackParam<Atom> task){
     free = false;
-    log("OK");
+	  
     if(todo.isEmpty()) {
       // Alternative: use failed() primitive with meaningful error msg
       signal("all_tasks_completed");
@@ -104,5 +106,12 @@ public class BlackBoard extends Artifact {
       task.set(new Atom(todo.remove(0)));
 
     free = true;
+  }
+	
+  //TODO: extends method to support varargs
+  private Structure new_task(String functor, String item) {
+    Structure s = new Structure(functor, 1);
+    s.addTerm(new Atom(item));
+    return s;
   }
 }
