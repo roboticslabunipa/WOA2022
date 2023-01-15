@@ -12,11 +12,14 @@ This first version does not include an ontology and requires certain care in pro
 Prerequisites:
 -----------------
 
-- JDK 17
-- Ubuntu 20.04 / macOS Monterey 12 or latest
-- Jacamo 1.1 (use the one provided in the repository)
-- Jason 3.1 (needed for developers, use the version provided)
-- Gradle 7.4.2 or 7.5.1
+- JDK 17 ([here](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html))
+- Ubuntu 20.04 / macOS Monterey 12 or latest (not tested on Windows)
+- Jacamo 1.1[^1]
+- Jason 3.1[^1]
+- Gradle 7.4.2 or 7.5.1[^2] ([here](https://gradle.org/install/)) 
+
+[^1]: use the version provided in this repository and follow the subsequent instruction
+[^2]: not required, but recommended
 
 Prepare the enviroment:
 ----------------
@@ -25,11 +28,16 @@ Go inside the folder with Jacamo (same things for Jason) and run:
 ```
 ./gradlew config
 ```
-Set $JAVA_HOME, $JACAMO_HOME, and if used $JASON_HOME.
+Set $JAVA_HOME, $JACAMO_HOME and $JASON_HOME.
 The steps for these configurations are shown in the output of the previous script.
 
-For more details on setup follow the instruction for Jacamo developer in the README at this link: 
+At the end of these steps, the build directories will be generated and the jason and jacamo scripts work from the terminal (try typing jason or jacamo from a new shell.
+
+***In 'jacamo 1.1/build/libs' the file jason-3.1.jar is excluded, so you have to copy it from the path jason 3.1/build/libs and paste it into the previous directory***
+
+For more details on setup Jacamo and/or Jason follow the instruction for Developer in the README at this links: 
 - https://github.com/jacamo-lang/jacamo
+- https://github.com/jason-lang/jason
 
 Run example:
 -------------
