@@ -35,7 +35,7 @@ The steps for these configurations are shown in the output of the previous scrip
 
 At the end of these steps, the build directories will be generated and the jason and jacamo scripts work from the terminal (try typing jason or jacamo from a new shell.
 
-***In 'jacamo 1.1/build/libs' the file jason-3.1.jar is excluded, so you have to copy it from the path jason 3.1/build/libs and paste it into the previous directory***
+***In 'jacamo 1.1/build/libs' the file jason-3.1.jar is excluded for implementation reasons (by default it would be included), so you have to copy it from the path jason 3.1/build/libs and paste it into the previous directory***
 
 For more details on setup Jacamo and/or Jason follow the instruction for Developer in the README at this links: 
 - https://github.com/jacamo-lang/jacamo
